@@ -15,7 +15,9 @@ set_warnings("all")
 add_rules("mode.debug", "mode.release")
 
 if is_plat("linux") then
-    set_toolchains("gcc") -- tested with gcc 
+    set_toolchains("clang-18") -- shall be explicit clang-* 
+    -- set_toolchains("gcc-14")
+    -- tested with gcc and clang
 end
 
 if is_plat("windows") then
@@ -31,6 +33,11 @@ target("magic")
     set_kind("headeronly")
     add_includedirs("include", {interface = true})
     add_headerfiles("include/(magic/*.h)")
+
+target("main")
+    set_kind("binary")
+    add_deps("magic")
+    add_files("src/main.cpp")
 
 target("test")
     set_kind("binary")

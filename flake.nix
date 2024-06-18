@@ -14,7 +14,7 @@
     };
   in {
     devShells.default = pkgs.mkShell.override {
-      stdenv = pkgs.llvmPackages_18.stdenv;
+      stdenv = pkgs.llvmPackages.stdenv;
       # stdenv = pkgs.gcc14Stdenv;
     } rec {
       name = "magic.cpp";
@@ -26,6 +26,8 @@
 
       buildInputs = with pkgs; [
         xmake
+	llvmPackages.libcxxClang
+	llvmPackages.libcxxStdenv
       ];
       # see https://github.com/xmake-io/xmake/issues/5138 and https://github.com/NixOS/nixpkgs/issues/314313
       shellHook = ''
