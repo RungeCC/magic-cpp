@@ -3,11 +3,9 @@
 
 #include "raw_name.h"
 #include "type_traits.h"
-#include <cstdint> // for std::uint*_t
 #include <string>
 #include <vector>
-#include <set> // for std::set
-#include <map>
+#include <cstdint> // for std::uint*_t
 
 namespace magic
 {
@@ -36,8 +34,6 @@ namespace magic::details
         MEMBER,
         TEMPLATE,
         BASIC,
-        CLASS,
-        CLOSURE,
         NTTP
     };
 
@@ -53,7 +49,7 @@ namespace magic::details
         bool is_const;
         bool is_volatile;
 
-        virtual ~BasicType() {};
+        virtual ~BasicType(){};
         virtual TypeKind Kind() const override { return TypeKind::BASIC; }
     };
 
@@ -62,7 +58,7 @@ namespace magic::details
         Type* type;
         std::string name;
 
-        virtual ~NTTP() {};
+        virtual ~NTTP(){};
         virtual TypeKind Kind() const override { return TypeKind::NTTP; }
     };
 
@@ -158,18 +154,6 @@ namespace magic::details
         virtual TypeKind Kind() const override { return TypeKind::FUNCTION; }
     };
 
-    struct ClosureType : public BasicType
-    {
-        Type* invoke_operator; // if equals to nullptr, means have template invoke operator
-        bool is_injected_typename = false;
-        virtual TypeKind Kind() const override { return TypeKind::CLOSURE; }
-        virtual ~ClosureType()
-        {
-            if (!invoke_operator)
-                delete invoke_operator;
-        }
-    };
-
     struct never_functor
     {
     };
@@ -245,40 +229,10 @@ namespace magic::details
     inline std::size_t lambda_id = 0;
 
     template <typename T>
-    std::string generate_lambda_id()
+    std::string resolve_lambda()
     {
         static std::size_t id = lambda_id++;
         return "<lambda{" + std::to_string(id) + "}>";
-    }
-
-    template <typename T>
-    ClosureType* parse_closure(bool is_full_name)
-    {
-        static std::map<std::string_view, std::string> lambda_ids{};
-        std::string_view raw_name =raw_name_of<T>();
-        auto closure_type = new ClosureType{};
-        if (lambda_ids.contains(raw_name)) {
-            closure_type->name = lambda_ids.at(raw_name);
-            closure_type->is_injected_typename = true; // handle injected typename
-            return closure_type;
-        }
-
-        lambda_ids[raw_name] =  generate_lambda_id<T>();
-        closure_type->is_injected_typename = false;
-        closure_type->name = lambda_ids.at(raw_name);
-
-        if constexpr (requires { &T::operator(); })
-        {
-            auto member = parse<decltype(&T::operator())>(is_full_name);
-
-            closure_type->invoke_operator = member;
-            return closure_type;
-        }
-        else
-        {
-            closure_type->invoke_operator = nullptr;
-            return closure_type;
-        }
     }
 
     template <typename Tuple, std::size_t... Is>
@@ -408,21 +362,18 @@ namespace magic::details
         }
         else
         {
+            BasicType* basic_type = new BasicType{};
             if constexpr (is_lambda<Primary>())
             {
-                auto* basic_type = parse_closure<Primary>(is_full_name);
-                basic_type->is_const = is_const;
-                basic_type->is_volatile = is_volatile;
-                return basic_type;
+                basic_type->name = resolve_lambda<Primary>();
             }
             else
             {
-                auto* basic_type = new BasicType{};
                 basic_type->name = raw_name_of<Primary>();
-                basic_type->is_const = is_const;
-                basic_type->is_volatile = is_volatile;
-                return basic_type;
             }
+            basic_type->is_const = is_const;
+            basic_type->is_volatile = is_volatile;
+            return basic_type;
         }
     }
 } // namespace magic::details
