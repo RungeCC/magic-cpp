@@ -78,6 +78,10 @@ enable_testing()
 
 include_directories(include)
 
+add_executable(example
+    example/visualization.cpp
+)
+
 # 使用通配符一次性添加多个测试文件
 file(GLOB TEST_SOURCES "test/*.cpp")
 
