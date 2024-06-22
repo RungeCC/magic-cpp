@@ -34,10 +34,10 @@ target("magic")
     add_includedirs("include", {interface = true})
     add_headerfiles("include/(magic/*.h)")
 
-target("main")
+target("example")
     set_kind("binary")
     add_deps("magic")
-    add_files("src/main.cpp")
+    add_files("example/visualization.cpp")
 
 target("test")
     set_kind("binary")
