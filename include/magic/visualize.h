@@ -216,6 +216,15 @@ namespace magic::details
                 std::string modifier = build_cxx_modifiers(basic->is_const, basic->is_volatile);
                 visualize(std::move(branch), std::move(name), std::move(modifier));
             }
+            else if (type->Kind() == TypeKind::CLOSURE) {
+                ClosureType* closure = static_cast<ClosureType*>(type);
+                std::string name = colorize(std::move(closure->name), config.type);
+                std::string modifier = build_cxx_modifiers(closure->is_const, closure->is_volatile);
+                visualize(std::move(branch), std::move(name), std::move(modifier));
+                if (closure->invoke_operator != nullptr and not closure->is_injected_typename) {
+                    visualize(closure->invoke_operator, prefix, "&operator(): ", true);
+                }
+            }
             else if (type->Kind() == TypeKind::POINTER)
             {
                 Pointer* pointer = static_cast<Pointer*>(type);
@@ -247,10 +256,10 @@ namespace magic::details
                 Function* function = static_cast<Function*>(type);
                 std::string name = colorize("function", config.builtin);
                 std::string modifier = build_cxx_modifiers(function->isConst(),
-                                                            function->isVolatile(),
-                                                            function->isLvalueRef(),
-                                                            function->isLvalueRef(),
-                                                            function->isNoexcept());
+                                                           function->isVolatile(),
+                                                           function->isLvalueRef(),
+                                                           function->isLvalueRef(),
+                                                           function->isNoexcept());
 
                 visualize(std::move(branch), std::move(name), std::move(modifier));
 
