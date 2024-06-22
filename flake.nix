@@ -20,15 +20,13 @@
       name = "magic.cpp";
 
       packages = with pkgs; [
-        unzip
-	clang-tools_18
+        unzip          # for xmake repo
+        clang-tools_18 # for clang-format and clangd
       ];
 
       buildInputs = with pkgs; [
         xmake
-	llvmPackages.libcxxClang
-	llvmPackages.libcxxStdenv
-      ];
+	    ];
       # see https://github.com/xmake-io/xmake/issues/5138 and https://github.com/NixOS/nixpkgs/issues/314313
       shellHook = ''
         export LD=$CXX
