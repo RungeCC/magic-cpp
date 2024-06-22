@@ -13,13 +13,17 @@ void print(std::format_string<Ts...> str, Ts&&... args)
 }
 void print() { std::cout << std::flush; }
 
+template <auto>
+struct nttp
+{
+};
 
 int main()
 {
-//    using T1 = int (*(*(*)(int*))[4])(int*); // hard to understand
-//    print("type alias T1\n{}", magic::visualize<T1>());
+    using T1 = int (*(*(*)(int*))[4])(int*); // hard to understand
+    print("type alias T1\n{}", magic::visualize<T1>());
 
-    using T2 = decltype([a=1](int, char, double) -> void {}); // hard to understand
+    using T2 = decltype([a = 1](int, char, double, nttp<[]() {}> i) noexcept { return [&]() {}; }); // hard to understand
     print("type alias T2\n{}", magic::visualize<T2>());
 
     magic::VisualizeOption option1{
